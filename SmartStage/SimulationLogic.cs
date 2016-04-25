@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using KSP.UI.Screens;
 
 namespace SmartStage
 {
@@ -214,6 +213,16 @@ namespace SmartStage
 				newStages.Add(notfairingStage);
 			}
 			stages = newStages;
+			stages.Reverse();
+			// This is ugly, but on KSP 1.1 I have not found anything better
+			// We call this private method for each part from the root, twice and it works...
+			var SortIcons = typeof(KSP.UI.Screens.StageManager).GetMethod("SortIcons",
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null,
+				new Type[]{typeof(bool), typeof(Part), typeof(bool)}, null);
+			var root = stages[0].stageParts[0];
+			while (root.parent != null) root = root.parent;
+			setStages(root, SortIcons);
+			setStages(root, SortIcons);
 
 			int initialStage = 0;
 			foreach (Part part in state.availableNodes.Keys)
@@ -254,6 +263,26 @@ namespace SmartStage
 				Debug.Log(result);
 			}
 			#endif
+		}
+
+		private void setStages(Part part, System.Reflection.MethodInfo SortIcons)
+		{
+			var stageManager = KSP.UI.Screens.StageManager.Instance;
+			for (int i = 0 ; i < stages.Count ; i++)
+			{
+				var stage = stages[i];
+				foreach (var p in stage.stageParts)
+				{
+					p.inverseStage = i;
+				}
+			}
+			if (part.stackIcon != null && part.stackIcon.StageIcon != null)
+			{
+				stageManager.HoldIcon(part.stackIcon.StageIcon);
+				SortIcons.Invoke(stageManager, new object[]{true, part, false});
+			}
+			foreach (var child in part.children)
+				setStages(child, SortIcons);
 		}
 
 		public static void inFlightComputeStages()

@@ -14,8 +14,8 @@ TAR     := tar
 ZIP     := zip
 
 VERSION_MAJOR := 2
-VERSION_MINOR := 8
-VERSION_PATCH := 0
+VERSION_MINOR := 9
+VERSION_PATCH := 1
 
 VERSION := ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}
 
@@ -38,7 +38,7 @@ info:
 build/%.dll: ${SOURCEFILES}
 	mkdir -p build
 	${GMCS} -t:library -lib:${MANAGED} \
-		-r:Assembly-CSharp,Assembly-CSharp-firstpass,UnityEngine \
+		-r:Assembly-CSharp,Assembly-CSharp-firstpass,UnityEngine,KSPUtil,UnityEngine.UI \
 		${DEBUG} \
 		-out:$@ \
 		${SOURCEFILES}
